@@ -1,0 +1,176 @@
+{
+  "name": "checkpoint1_agustina_farias",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -48,
+        112
+      ],
+      "id": "ee1c4e05-b542-42dc-b94f-e9dfeb489374",
+      "name": "When chat message received",
+      "webhookId": "d9bdf7a6-c20d-402e-aad6-197732f028f1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "### ROL Y ÁMBITO ###\nEres un Asistente Ejecutivo de Triaje y Clasificación de Correos Electrónicos Corporativos. Operas exclusivamente en la bandeja de entrada de operaciones administrativas de la organización.\n\n### OBJETIVO COMERCIAL ###\nAnalizar el contenido de los mensajes recibidos, determinar su criticidad comercial y utilizar de forma autónoma la herramienta de Gmail para contrastar si el remitente posee un historial de conversaciones previas, estructurando un reporte de triaje confiable.\nUtiliza esta herramienta exclusivamente para buscar los últimos 3 hilos o mensajes recientes del remitente proporcionado. No intentes recuperar todo el historial histórico para evitar saturar el sistema.\n\n### REGLAS Y ESCALAMIENTO ###\n- Analiza de forma estricta el estímulo recibido y activa la herramienta de Gmail únicamente cuando sea necesario verificar antecedentes del remitente.\n- Si la instrucción del usuario es ambigua o se sale del alcance operativo, detén el ciclo de razonamiento de inmediato y escala el caso a revisión humana.",
+          "maxIterations": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        160,
+        112
+      ],
+      "id": "eceb89a5-2c2a-41d7-8df4-df84d562518b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        304
+      ],
+      "id": "54a3bc8f-2ab2-4461-89a6-484c673db9e8",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "K0fm5mlQ5jhzb9CP",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "value": "U03CKP1EG9Z",
+          "mode": "list",
+          "cachedResultName": "Agustina Farias (@agustina.farias)"
+        },
+        "text": "={{ $json.output }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        496,
+        112
+      ],
+      "id": "80f36647-d217-4fe9-bf48-4d05e984c1f8",
+      "name": "Send a message",
+      "webhookId": "1e812089-46a7-416e-946e-4453bc570064",
+      "credentials": {
+        "slackApi": {
+          "id": "qP5mgX9GDkPLXwXg",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Úsala exclusivamente para buscar hilos de correo en Gmail cuando el usuario necesite revisar mensajes, conversaciones o información de correos electrónicos anteriores.",
+        "resource": "thread",
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Limit', ``, 'number') }}",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        320
+      ],
+      "id": "ceb60a67-d37b-4904-8adb-73a22cb38f16",
+      "name": "Get many threads in Gmail",
+      "webhookId": "b6114e98-95a9-4a95-ab9c-620a72788f83",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "fTUl8wafDczaprB8",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many threads in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "78547082-8890-4252-9c28-78b99968e32b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "01fd1b749f1582622c722ef47d5dcb9e8a99bf18aef3051a40ab5a6a219ffc1a"
+  },
+  "nodeGroups": [],
+  "id": "FBt910PC2Qz6rrjy",
+  "tags": []
+}
